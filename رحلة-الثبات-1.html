@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>رحلة الثبات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0d1b2a;
+    --bg-mid:#152a3f;
+    --card:#1b3450;
+    --gold:#d4a94f;
+    --gold-soft:#e8cf9c;
+    --mist:#7ea3c1;
+    --text:#eef3f7;
+    --text-dim:#a8bdd0;
+    --good:#5fae8c;
+    --fall:#c17b5f;
+    --warn:#c17b5f;
+    --line:rgba(212,169,79,0.18);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh;
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(212,169,79,0.10), transparent 55%),
+      radial-gradient(ellipse at 100% 110%, rgba(95,174,140,0.08), transparent 50%),
+      linear-gradient(180deg, var(--bg-deep), var(--bg-mid));
+    font-family:'Tajawal', sans-serif;
+    color:var(--text);
+    padding:24px 14px 60px;
+  }
+  .wrap{max-width:520px; margin:0 auto;}
+
+  header{text-align:center; margin-bottom:20px;}
+  .star{font-size:12px; letter-spacing:4px; color:var(--gold-soft); opacity:0.8; text-transform:uppercase;}
+  h1{
+    font-size:28px; margin:6px 0 4px; font-weight:900;
+    background:linear-gradient(90deg, var(--gold-soft), var(--gold));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .verse{font-family:'Amiri', serif; font-size:15px; color:var(--text-dim); line-height:1.9; padding:0 8px;}
+
+  .tabs{
+    display:flex; gap:6px; margin:20px 0 18px; background:var(--bg-mid);
+    border-radius:14px; padding:5px; border:1px solid var(--line);
+  }
+  .tab{
+    flex:1; text-align:center; padding:10px 4px; border-radius:10px; font-size:12.5px;
+    font-weight:700; color:var(--text-dim); cursor:pointer; transition:all .15s;
+  }
+  .tab.active{background:linear-gradient(90deg, var(--gold), var(--gold-soft)); color:#1b2a1e;}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .streak-card{
+    background:linear-gradient(160deg, var(--card), var(--bg-mid));
+    border:1px solid var(--line); border-radius:20px; padding:24px 20px;
+    text-align:center; position:relative; overflow:hidden; margin-bottom:18px;
+  }
+  .streak-card::before{content:""; position:absolute; inset:0; background:radial-gradient(circle at 50% 0%, rgba(212,169,79,0.15), transparent 60%);}
+  .streak-num{font-size:58px; font-weight:900; color:var(--gold); line-height:1; position:relative; z-index:1;}
+  .streak-label{color:var(--text-dim); font-size:13px; margin-top:6px; position:relative; z-index:1;}
+  .best{font-size:12px; color:var(--mist); margin-top:8px; position:relative; z-index:1;}
+
+  .day-status{text-align:center; margin-bottom:18px; font-size:13.5px; color:var(--text-dim);}
+
+  .check-row{display:flex; gap:10px; margin-bottom:20px;}
+  .btn{
+    flex:1; padding:14px 8px; border-radius:14px; border:1px solid var(--line);
+    background:var(--card); color:var(--text); font-family:'Tajawal',sans-serif;
+    font-size:14px; font-weight:700; cursor:pointer; transition:transform .15s;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-good{border-color:rgba(95,174,140,0.5);}
+  .btn-good.active{background:rgba(95,174,140,0.18); box-shadow:0 0 0 1px var(--good) inset;}
+  .btn-fall{border-color:rgba(193,123,95,0.5);}
+  .btn-fall.active{background:rgba(193,123,95,0.18); box-shadow:0 0 0 1px var(--fall) inset;}
+
+  .note-box{margin-bottom:20px;}
+  .note-box textarea{
+    width:100%; min-height:64px; border-radius:14px; border:1px solid var(--line);
+    background:var(--bg-mid); color:var(--text); font-family:'Tajawal',sans-serif;
+    padding:12px 14px; font-size:13.5px; resize:vertical;
+  }
+  .note-box label{font-size:12.5px; color:var(--text-dim); display:block; margin-bottom:6px;}
+
+  .save-btn{
+    width:100%; padding:13px; border:none; border-radius:14px;
+    background:linear-gradient(90deg, var(--gold), var(--gold-soft));
+    color:#1b2a1e; font-weight:900; font-size:14px; cursor:pointer; margin-top:8px;
+  }
+
+  .section-title{
+    font-size:13.5px; color:var(--gold-soft); font-weight:700; margin:0 0 12px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .section-title::after{content:""; flex:1; height:1px; background:var(--line);}
+
+  .calendar{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:24px;}
+  .cell{
+    aspect-ratio:1; border-radius:8px; background:var(--bg-mid); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:10.5px; color:var(--text-dim);
+  }
+  .cell.good{background:rgba(95,174,140,0.35); border-color:var(--good); color:#fff;}
+  .cell.fall{background:rgba(193,123,95,0.35); border-color:var(--fall); color:#fff;}
+  .cell.today{box-shadow:0 0 0 2px var(--gold);}
+
+  .tip-card{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:14px 16px; font-size:13.5px; line-height:1.85; color:var(--text-dim); margin-bottom:16px;
+  }
+  .tip-card b{color:var(--gold-soft);}
+
+  /* Prayers panel */
+  .prayer-list{display:flex; flex-direction:column; gap:10px; margin-bottom:20px;}
+  .prayer-item{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px;
+    cursor:pointer; transition:all .15s;
+  }
+  .prayer-item.done{background:rgba(95,174,140,0.18); border-color:var(--good);}
+  .prayer-name{font-size:15px; font-weight:700;}
+  .prayer-check{
+    width:26px; height:26px; border-radius:8px; border:2px solid var(--mist);
+    display:flex; align-items:center; justify-content:center; font-size:15px; color:transparent;
+  }
+  .prayer-item.done .prayer-check{background:var(--good); border-color:var(--good); color:#fff;}
+  .prayer-progress{text-align:center; margin-bottom:18px; color:var(--gold-soft); font-weight:700; font-size:14px;}
+
+  /* Adhkar panel */
+  .adhkar-group{margin-bottom:22px;}
+  .adhkar-group h3{font-size:14.5px; color:var(--gold-soft); margin:0 0 10px;}
+  .adhkar-item{
+    display:flex; align-items:flex-start; gap:10px; background:var(--card);
+    border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:8px;
+    cursor:pointer; font-size:13px; line-height:1.7; color:var(--text-dim);
+  }
+  .adhkar-item.done{background:rgba(95,174,140,0.15); border-color:var(--good); color:var(--text);}
+  .adhkar-check{
+    min-width:22px; height:22px; border-radius:6px; border:2px solid var(--mist);
+    display:flex; align-items:center; justify-content:center; font-size:13px; color:transparent; flex-shrink:0; margin-top:1px;
+  }
+  .adhkar-item.done .adhkar-check{background:var(--good); border-color:var(--good); color:#fff;}
+
+  /* Social media panel */
+  .timer-card{
+    background:linear-gradient(160deg, var(--card), var(--bg-mid));
+    border:1px solid var(--line); border-radius:20px; padding:26px 20px;
+    text-align:center; margin-bottom:18px;
+  }
+  .timer-display{font-size:44px; font-weight:900; color:var(--gold); font-variant-numeric:tabular-nums;}
+  .timer-sub{font-size:12.5px; color:var(--text-dim); margin-top:6px;}
+  .progress-bar{
+    width:100%; height:10px; background:var(--bg-mid); border-radius:6px; overflow:hidden;
+    margin:16px 0 6px; border:1px solid var(--line);
+  }
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--good), var(--gold)); transition:width .3s;}
+  .progress-fill.over{background:linear-gradient(90deg, var(--warn), #e08a5f);}
+  .limit-label{font-size:11.5px; color:var(--text-dim);}
+  .timer-btn-row{display:flex; gap:10px; margin-top:18px;}
+  .timer-btn{
+    flex:1; padding:14px; border-radius:14px; border:none; font-weight:800; font-size:14px; cursor:pointer;
+  }
+  .timer-start{background:linear-gradient(90deg, var(--good), #7fc4a3); color:#0d2018;}
+  .timer-stop{background:linear-gradient(90deg, var(--fall), #d99b7c); color:#2a1208;}
+  .timer-reset{background:var(--bg-mid); color:var(--text-dim); border:1px solid var(--line); flex:0.6;}
+  .over-warning{
+    background:rgba(193,123,95,0.2); border:1px solid var(--fall); border-radius:14px;
+    padding:12px 14px; font-size:13px; color:var(--gold-soft); margin-bottom:16px; text-align:center;
+  }
+
+  footer{text-align:center; font-size:11.5px; color:var(--text-dim); opacity:0.6; margin-top:16px;}
+  .loading{text-align:center; padding:40px; color:var(--text-dim);}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="loading">جاري التحميل...</div>
+</div>
+
+<script>
+const STORAGE_KEY = 'thabat-entries';
+const state = { entries: {}, loaded:false, activeTab:'thabat', timerRunning:false, timerStart:null, timerTick:null };
+
+function todayKey(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function getTodayEntry(){
+  const key = todayKey();
+  if(!state.entries[key]) state.entries[key] = {};
+  return state.entries[key];
+}
+
+const verses = [
+  "﴿ وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا ﴾",
+  "﴿ إِنَّ مَعَ الْعُسْرِ يُسْرًا ﴾",
+  "﴿ وَالَّذِينَ جَاهَدُوا فِينَا لَنَهْدِيَنَّهُمْ سُبُلَنَا ﴾",
+  "﴿ لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا ﴾",
+  "﴿ أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ ﴾",
+];
+
+const tips = [
+  "الهاتف هو غالبًا نقطة الدخول عندك — حدد وقت للسوشل ميديا وابعده وقت الليل.",
+  "الصيام يقلل الرغبة بشكل طبيعي، جرب الاثنين والخميس.",
+  "لما تحس بالرغبة: قوم، توضأ، غيّر المكان — لا تبقَ في نفس الوضعية.",
+  "السقطة الواحدة ما تلغيش أيام النجاح اللي قبلها. كمل بلا جلد ذات.",
+  "نظّم نومك — التعب والسهر يزيدان الرغبة والتفكير فيها.",
+];
+
+const PRAYERS = [
+  {id:'fajr', name:'الفجر'},
+  {id:'dhuhr', name:'الظهر'},
+  {id:'asr', name:'العصر'},
+  {id:'maghrib', name:'المغرب'},
+  {id:'isha', name:'العشاء'},
+];
+
+const ADHKAR_SABAH = [
+  'آية الكرسي',
+  'سورة الإخلاص والمعوذتين (×3)',
+  'سيد الاستغفار',
+  'اللهم بك أصبحنا وبك أمسينا...',
+  'رضيت بالله ربًا وبالإسلام دينًا...',
+];
+const ADHKAR_MASAA = [
+  'آية الكرسي',
+  'سورة الإخلاص والمعوذتين (×3)',
+  'اللهم بك أمسينا وبك أصبحنا...',
+  'أمسينا وأمسى الملك لله...',
+  'أستغفر الله وأتوب إليه (×3)',
+];
+
+const SOCIAL_LIMIT_MIN = 60;
+
+async function loadData(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    state.entries = res ? JSON.parse(res.value) : {};
+  }catch(e){ state.entries = {}; }
+  state.loaded = true;
+  // resume timer if it was running
+  const t = getTodayEntry();
+  if(t.timerRunning && t.timerStartedAt){
+    state.timerRunning = true;
+    state.timerStart = t.timerStartedAt;
+    startTick();
+  }
+  render();
+}
+
+let saveTimeout = null;
+async function saveData(immediate){
+  if(saveTimeout) clearTimeout(saveTimeout);
+  const doSave = async ()=>{
+    try{ await window.storage.set(STORAGE_KEY, JSON.stringify(state.entries), false); }
+    catch(e){ console.error('save failed', e); }
+  };
+  if(immediate){ await doSave(); } else { saveTimeout = setTimeout(doSave, 400); }
+}
+
+function computeStreak(){
+  let streak = 0;
+  let d = new Date();
+  while(true){
+    const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const val = state.entries[key] && state.entries[key].status;
+    if(val === 'good'){ streak++; d.setDate(d.getDate()-1); }
+    else if(val === 'fall'){ break; }
+    else {
+      const isToday = key === todayKey();
+      if(isToday){ d.setDate(d.getDate()-1); continue; }
+      break;
+    }
+  }
+  return streak;
+}
+function computeBest(){
+  const dates = Object.keys(state.entries).sort();
+  let best=0, cur=0;
+  for(const key of dates){
+    const val = state.entries[key] && state.entries[key].status;
+    if(val === 'good'){ cur++; best = Math.max(best, cur); } else { cur = 0; }
+  }
+  return best;
+}
+function last21Days(){
+  const days = [];
+  const d = new Date();
+  for(let i=20;i>=0;i--){
+    const dd = new Date(d); dd.setDate(d.getDate()-i);
+    const key = dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0');
+    days.push({key, dayNum: dd.getDate(), isToday: key===todayKey()});
+  }
+  return days;
+}
+
+async function setStatus(status){
+  getTodayEntry().status = status;
+  await saveData(true);
+  render();
+}
+async function saveNote(){
+  const textarea = document.getElementById('note-input');
+  getTodayEntry().note = textarea.value;
+  await saveData(true);
+  const btn = document.getElementById('save-note-btn');
+  btn.textContent = 'تم الحفظ ✓';
+  setTimeout(()=>{btn.textContent='حفظ الملاحظة';}, 1500);
+}
+
+function switchTab(tab){
+  state.activeTab = tab;
+  render();
+}
+
+async function togglePrayer(id){
+  const t = getTodayEntry();
+  if(!t.prayers) t.prayers = {};
+  t.prayers[id] = !t.prayers[id];
+  await saveData(true);
+  render();
+}
+
+async function toggleAdhkar(group, idx){
+  const t = getTodayEntry();
+  if(!t.adhkar) t.adhkar = {sabah:[], masaa:[]};
+  if(!t.adhkar[group]) t.adhkar[group] = [];
+  const i = t.adhkar[group].indexOf(idx);
+  if(i>=0) t.adhkar[group].splice(i,1); else t.adhkar[group].push(idx);
+  await saveData(true);
+  render();
+}
+
+function formatTime(totalSeconds){
+  const m = Math.floor(totalSeconds/60);
+  const s = totalSeconds%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+function getSocialSeconds(){
+  const t = getTodayEntry();
+  let base = t.socialSeconds || 0;
+  if(state.timerRunning && state.timerStart){
+    base += Math.floor((Date.now() - state.timerStart)/1000);
+  }
+  return base;
+}
+
+function startTick(){
+  if(state.timerTick) clearInterval(state.timerTick);
+  state.timerTick = setInterval(()=>{
+    if(state.activeTab === 'social') renderSocialOnly();
+  }, 1000);
+}
+
+async function startTimer(){
+  if(state.timerRunning) return;
+  state.timerRunning = true;
+  state.timerStart = Date.now();
+  const t = getTodayEntry();
+  t.timerRunning = true;
+  t.timerStartedAt = state.timerStart;
+  await saveData(true);
+  startTick();
+  render();
+}
+
+async function stopTimer(){
+  if(!state.timerRunning) return;
+  const elapsed = Math.floor((Date.now() - state.timerStart)/1000);
+  const t = getTodayEntry();
+  t.socialSeconds = (t.socialSeconds||0) + elapsed;
+  t.timerRunning = false;
+  t.timerStartedAt = null;
+  state.timerRunning = false;
+  state.timerStart = null;
+  if(state.timerTick){ clearInterval(state.timerTick); state.timerTick = null; }
+  await saveData(true);
+  render();
+}
+
+async function resetTimer(){
+  if(state.timerRunning) await stopTimer();
+  const t = getTodayEntry();
+  t.socialSeconds = 0;
+  await saveData(true);
+  render();
+}
+
+function renderSocialOnly(){
+  const el = document.getElementById('timer-display-el');
+  const fill = document.getElementById('progress-fill-el');
+  if(!el) return;
+  const seconds = getSocialSeconds();
+  el.textContent = formatTime(seconds);
+  const pct = Math.min(100, (seconds/(SOCIAL_LIMIT_MIN*60))*100);
+  if(fill){
+    fill.style.width = pct+'%';
+    fill.classList.toggle('over', seconds > SOCIAL_LIMIT_MIN*60);
+  }
+  const warnEl = document.getElementById('over-warning-el');
+  if(warnEl) warnEl.style.display = seconds > SOCIAL_LIMIT_MIN*60 ? 'block' : 'none';
+}
+
+function renderThabat(){
+  const key = todayKey();
+  const t = getTodayEntry();
+  const todayStatus = t.status;
+  const streak = computeStreak();
+  const best = computeBest();
+  const verse = verses[Math.floor(Math.random()*verses.length)];
+  const tip = tips[Math.floor(Math.random()*tips.length)];
+  const days = last21Days();
+  const noteVal = t.note || '';
+
+  return `
+    <div class="verse" style="margin-bottom:16px;">${verse}</div>
+    <div class="streak-card">
+      <div class="streak-num">${streak}</div>
+      <div class="streak-label">${streak===0?'ابدأ اليوم من جديد':'يوم متواصل من الثبات'}</div>
+      <div class="best">أفضل سلسلة: ${best} يوم</div>
+    </div>
+    <div class="day-status">
+      ${todayStatus==='good' ? '✅ سجلت اليوم كيوم ثبات، بارك الله فيك' : todayStatus==='fall' ? '💛 سجلت اليوم، لا بأس، كمل من جديد' : 'كيف كان يومك؟'}
+    </div>
+    <div class="check-row">
+      <button class="btn btn-good ${todayStatus==='good'?'active':''}" onclick="setStatus('good')">ثبتّ اليوم</button>
+      <button class="btn btn-fall ${todayStatus==='fall'?'active':''}" onclick="setStatus('fall')">سقطت اليوم</button>
+    </div>
+    <div class="note-box">
+      <label>ملاحظة سريعة (اختياري) — شنو كان السبب أو الظرف اليوم؟</label>
+      <textarea id="note-input" placeholder="مثال: تصفحت الهاتف بزاف قبل النوم...">${noteVal}</textarea>
+      <button class="save-btn" id="save-note-btn" onclick="saveNote()">حفظ الملاحظة</button>
+    </div>
+    <div class="section-title">آخر 21 يوم</div>
+    <div class="calendar">
+      ${days.map(d=>{
+        const v = state.entries[d.key] && state.entries[d.key].status;
+        const cls = v==='good'?'good':v==='fall'?'fall':'';
+        return `<div class="cell ${cls} ${d.isToday?'today':''}">${d.dayNum}</div>`;
+      }).join('')}
+    </div>
+    <div class="section-title">نصيحة اليوم</div>
+    <div class="tip-card"><b>💡</b> ${tip}</div>
+  `;
+}
+
+function renderPrayers(){
+  const t = getTodayEntry();
+  const prayers = t.prayers || {};
+  const doneCount = PRAYERS.filter(p=>prayers[p.id]).length;
+  return `
+    <div class="prayer-progress">${doneCount} / 5 صلوات اليوم</div>
+    <div class="prayer-list">
+      ${PRAYERS.map(p=>`
+        <div class="prayer-item ${prayers[p.id]?'done':''}" onclick="togglePrayer('${p.id}')">
+          <span class="prayer-name">${p.name}</span>
+          <span class="prayer-check">✓</span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="tip-card"><b>💡</b> الصلاة في وقتها أعظم حصن يبعدك عن الفراغ الذي يجرك للمعصية.</div>
+  `;
+}
+
+function renderAdhkar(){
+  const t = getTodayEntry();
+  const adhkar = t.adhkar || {sabah:[], masaa:[]};
+  const sabahDone = (adhkar.sabah||[]).length;
+  const masaaDone = (adhkar.masaa||[]).length;
+  return `
+    <div class="adhkar-group">
+      <h3>🌅 أذكار الصباح (${sabahDone}/${ADHKAR_SABAH.length})</h3>
+      ${ADHKAR_SABAH.map((a,i)=>`
+        <div class="adhkar-item ${(adhkar.sabah||[]).includes(i)?'done':''}" onclick="toggleAdhkar('sabah',${i})">
+          <span class="adhkar-check">✓</span><span>${a}</span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="adhkar-group">
+      <h3>🌙 أذكار المساء (${masaaDone}/${ADHKAR_MASAA.length})</h3>
+      ${ADHKAR_MASAA.map((a,i)=>`
+        <div class="adhkar-item ${(adhkar.masaa||[]).includes(i)?'done':''}" onclick="toggleAdhkar('masaa',${i})">
+          <span class="adhkar-check">✓</span><span>${a}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderSocial(){
+  const seconds = getSocialSeconds();
+  const pct = Math.min(100, (seconds/(SOCIAL_LIMIT_MIN*60))*100);
+  const over = seconds > SOCIAL_LIMIT_MIN*60;
+  return `
+    <div class="timer-card">
+      <div class="timer-display" id="timer-display-el">${formatTime(seconds)}</div>
+      <div class="timer-sub">وقت استعمال السوشل ميديا اليوم</div>
+      <div class="progress-bar"><div class="progress-fill ${over?'over':''}" id="progress-fill-el" style="width:${pct}%"></div></div>
+      <div class="limit-label">الحد اليومي: ${SOCIAL_LIMIT_MIN} دقيقة</div>
+      <div class="timer-btn-row">
+        ${state.timerRunning
+          ? `<button class="timer-btn timer-stop" onclick="stopTimer()">⏸ إيقاف الآن</button>`
+          : `<button class="timer-btn timer-start" onclick="startTimer()">▶ بدأت أستعمل السوشل ميديا</button>`
+        }
+        <button class="timer-btn timer-reset" onclick="resetTimer()">تصفير</button>
+      </div>
+    </div>
+    <div class="over-warning" id="over-warning-el" style="display:${over?'block':'none'}">
+      ⚠️ تجاوزت الساعة المسموحة اليوم. أغلق التطبيق دابا وارجع لمذاكرتك أو حاجة نافعة.
+    </div>
+    <div class="tip-card"><b>💡</b> شغّل هذا التايمر كل مرة تفتح فيها إنستغرام/تيك توك/فيسبوك، وأوقفه لما تسكر. الهدف: ما تتجاوزش ساعة كاملة في اليوم.</div>
+  `;
+}
+
+function render(){
+  if(!state.loaded){
+    document.getElementById('app').innerHTML = '<div class="loading">جاري التحميل...</div>';
+    return;
+  }
+  const tabs = [
+    {id:'thabat', label:'الثبات'},
+    {id:'prayers', label:'الصلوات'},
+    {id:'adhkar', label:'الأذكار'},
+    {id:'social', label:'السوشل ميديا'},
+  ];
+  let panelHtml = '';
+  if(state.activeTab==='thabat') panelHtml = renderThabat();
+  else if(state.activeTab==='prayers') panelHtml = renderPrayers();
+  else if(state.activeTab==='adhkar') panelHtml = renderAdhkar();
+  else if(state.activeTab==='social') panelHtml = renderSocial();
+
+  document.getElementById('app').innerHTML = `
+    <header>
+      <div class="star">رحلة شخصية وخاصة</div>
+      <h1>رحلة الثبات</h1>
+    </header>
+    <div class="tabs">
+      ${tabs.map(tb=>`<div class="tab ${state.activeTab===tb.id?'active':''}" onclick="switchTab('${tb.id}')">${tb.label}</div>`).join('')}
+    </div>
+    <div class="panel active">${panelHtml}</div>
+    <footer>بياناتك خاصة بك وتُحفظ على جهازك فقط</footer>
+  `;
+
+  if(state.activeTab==='social'){
+    startTick();
+    renderSocialOnly();
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
