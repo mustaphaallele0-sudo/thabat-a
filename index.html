@@ -237,13 +237,12 @@ const ADHKAR_MASAA = [
 
 const SOCIAL_LIMIT_MIN = 60;
 
-async function loadData(){
+function loadData(){
   try{
-    const res = await window.storage.get(STORAGE_KEY, false);
-    state.entries = res ? JSON.parse(res.value) : {};
+    const res = localStorage.getItem(STORAGE_KEY);
+    state.entries = res ? JSON.parse(res) : {};
   }catch(e){ state.entries = {}; }
   state.loaded = true;
-  // resume timer if it was running
   const t = getTodayEntry();
   if(t.timerRunning && t.timerStartedAt){
     state.timerRunning = true;
@@ -253,14 +252,10 @@ async function loadData(){
   render();
 }
 
-let saveTimeout = null;
-async function saveData(immediate){
-  if(saveTimeout) clearTimeout(saveTimeout);
-  const doSave = async ()=>{
-    try{ await window.storage.set(STORAGE_KEY, JSON.stringify(state.entries), false); }
-    catch(e){ console.error('save failed', e); }
-  };
-  if(immediate){ await doSave(); } else { saveTimeout = setTimeout(doSave, 400); }
+function saveData(immediate){
+  try{ 
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries)); 
+  } catch(e){ console.error('save failed', e); }
 }
 
 function computeStreak(){
@@ -299,15 +294,15 @@ function last21Days(){
   return days;
 }
 
-async function setStatus(status){
+function setStatus(status){
   getTodayEntry().status = status;
-  await saveData(true);
+  saveData(true);
   render();
 }
-async function saveNote(){
+function saveNote(){
   const textarea = document.getElementById('note-input');
   getTodayEntry().note = textarea.value;
-  await saveData(true);
+  saveData(true);
   const btn = document.getElementById('save-note-btn');
   btn.textContent = 'تم الحفظ ✓';
   setTimeout(()=>{btn.textContent='حفظ الملاحظة';}, 1500);
@@ -318,21 +313,21 @@ function switchTab(tab){
   render();
 }
 
-async function togglePrayer(id){
+function togglePrayer(id){
   const t = getTodayEntry();
   if(!t.prayers) t.prayers = {};
   t.prayers[id] = !t.prayers[id];
-  await saveData(true);
+  saveData(true);
   render();
 }
 
-async function toggleAdhkar(group, idx){
+function toggleAdhkar(group, idx){
   const t = getTodayEntry();
   if(!t.adhkar) t.adhkar = {sabah:[], masaa:[]};
   if(!t.adhkar[group]) t.adhkar[group] = [];
   const i = t.adhkar[group].indexOf(idx);
   if(i>=0) t.adhkar[group].splice(i,1); else t.adhkar[group].push(idx);
-  await saveData(true);
+  saveData(true);
   render();
 }
 
@@ -358,19 +353,19 @@ function startTick(){
   }, 1000);
 }
 
-async function startTimer(){
+function startTimer(){
   if(state.timerRunning) return;
   state.timerRunning = true;
   state.timerStart = Date.now();
   const t = getTodayEntry();
   t.timerRunning = true;
   t.timerStartedAt = state.timerStart;
-  await saveData(true);
+  saveData(true);
   startTick();
   render();
 }
 
-async function stopTimer(){
+function stopTimer(){
   if(!state.timerRunning) return;
   const elapsed = Math.floor((Date.now() - state.timerStart)/1000);
   const t = getTodayEntry();
@@ -380,15 +375,15 @@ async function stopTimer(){
   state.timerRunning = false;
   state.timerStart = null;
   if(state.timerTick){ clearInterval(state.timerTick); state.timerTick = null; }
-  await saveData(true);
+  saveData(true);
   render();
 }
 
-async function resetTimer(){
-  if(state.timerRunning) await stopTimer();
+function resetTimer(){
+  if(state.timerRunning) stopTimer();
   const t = getTodayEntry();
   t.socialSeconds = 0;
-  await saveData(true);
+  saveData(true);
   render();
 }
 
@@ -530,30 +525,4 @@ function render(){
     {id:'social', label:'السوشل ميديا'},
   ];
   let panelHtml = '';
-  if(state.activeTab==='thabat') panelHtml = renderThabat();
-  else if(state.activeTab==='prayers') panelHtml = renderPrayers();
-  else if(state.activeTab==='adhkar') panelHtml = renderAdhkar();
-  else if(state.activeTab==='social') panelHtml = renderSocial();
-
-  document.getElementById('app').innerHTML = `
-    <header>
-      <div class="star">رحلة شخصية وخاصة</div>
-      <h1>رحلة الثبات</h1>
-    </header>
-    <div class="tabs">
-      ${tabs.map(tb=>`<div class="tab ${state.activeTab===tb.id?'active':''}" onclick="switchTab('${tb.id}')">${tb.label}</div>`).join('')}
-    </div>
-    <div class="panel active">${panelHtml}</div>
-    <footer>بياناتك خاصة بك وتُحفظ على جهازك فقط</footer>
-  `;
-
-  if(state.activeTab==='social'){
-    startTick();
-    renderSocialOnly();
-  }
-}
-
-loadData();
-</script>
-</body>
-</html>
+  if(state.activeTab==='thabat') panelHtml = render  
